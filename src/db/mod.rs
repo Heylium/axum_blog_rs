@@ -7,6 +7,7 @@ use tokio_postgres::{
 };
 mod paginate;
 pub(crate) mod category;
+pub(crate) mod topic;
 
 pub use paginate::Paginate;
 

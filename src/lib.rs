@@ -2,9 +2,10 @@ pub mod error;
 pub mod db;
 pub mod handler;
 mod view;
-mod config;
+pub mod config;
 mod form;
 mod model;
+mod md;
 
 pub type Result<T> = std::result::Result<T, error::AppError>;
 

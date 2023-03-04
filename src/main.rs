@@ -1,5 +1,9 @@
-use axum::Router;
-use axum_blog::handler::{backend, frontend};
+use std::sync::Arc;
+
+use axum::{Router,  extract::Extension};
+use axum_blog::{handler::{backend, frontend}, config, AppState};
+use deadpool_postgres::Runtime;
+use dotenv::dotenv;
 
 #[tokio::main]
 async fn main() {
@@ -8,16 +12,22 @@ async fn main() {
     }
     tracing_subscriber::fmt::init();
 
-    tracing::info!("服务已启动");
+    dotenv().ok();
+    let cfg = config::Config::from_env().expect("初始化配置失败");
+    let pool = cfg.pg.create_pool(Some(Runtime::Tokio1), tokio_postgres::NoTls).expect("创建数据库连接池失败");
+
 
     let frontend_routers = frontend::router();
     let backend_routers = backend::router();
     let app = Router::new()
         .nest("/", frontend_routers)
-        .nest("/admin", backend_routers);
+        .nest("/admin", backend_routers)
+        .layer(Extension(Arc::new(AppState { pool})));
 
-    axum::Server::bind(&"127.0.0.1:8080".parse().unwrap())
+    tracing::info!("服务已启动：{}", &cfg.web.addr);
+
+    axum::Server::bind(&cfg.web.addr.parse().unwrap())
         .serve(app.into_make_service())
         .await
-        .unwrap()
+        .unwrap();
 }
