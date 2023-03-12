@@ -1,11 +1,14 @@
 pub mod error;
 pub mod db;
 pub mod handler;
-mod view;
+pub mod view;
 pub mod config;
-mod form;
-mod model;
+pub mod form;
+pub mod model;
 mod md;
+mod cookie;
+pub mod middleware;
+mod password;
 
 pub type Result<T> = std::result::Result<T, error::AppError>;
 

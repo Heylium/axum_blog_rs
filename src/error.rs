@@ -106,6 +106,12 @@ impl From<askama::Error> for AppError {
     }
 }
 
+impl From<bcrypt::BcryptError> for AppError {
+    fn from(err: bcrypt::BcryptError) -> Self {
+        Self::from_err(Box::new(err), AppErrorType::Crypt)
+    }
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let msg = match self.message {
