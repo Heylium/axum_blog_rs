@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 pub mod category;
 pub mod index;
-mod topic;
+pub mod topic;
 
 pub fn router() -> Router {
     let category_router = Router::new()

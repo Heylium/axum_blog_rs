@@ -6,8 +6,8 @@ use tokio_postgres::{
     GenericClient, Statement,
 };
 mod paginate;
-pub(crate) mod category;
-pub(crate) mod topic;
+pub mod category;
+pub mod topic;
 
 pub use paginate::Paginate;
 
