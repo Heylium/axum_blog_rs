@@ -2,9 +2,8 @@ use axum::{
     http::{header, HeaderMap, StatusCode},
     response::IntoResponse,
 };
-use axum::response::Response;
 
-//error types
+/// 应用程序错误类型
 #[derive(Debug)]
 pub enum AppErrorType {
     Db,
@@ -17,7 +16,7 @@ pub enum AppErrorType {
     Chrono,
 }
 
-//application errors
+/// 应用程序错误
 #[derive(Debug)]
 pub struct AppError {
     pub message: Option<String>,
@@ -25,12 +24,11 @@ pub struct AppError {
     pub types: AppErrorType,
 }
 
-
 impl AppError {
     fn new(
         message: Option<String>,
         cause: Option<Box<dyn std::error::Error>>,
-        types: AppErrorType
+        types: AppErrorType,
     ) -> Self {
         Self {
             message,
@@ -38,7 +36,6 @@ impl AppError {
             types,
         }
     }
-
     fn from_err(cause: Box<dyn std::error::Error>, types: AppErrorType) -> Self {
         Self::new(None, Some(cause), types)
     }
@@ -63,10 +60,9 @@ impl AppError {
     pub fn forbidden() -> Self {
         Self::from_str("无权访问", AppErrorType::Forbidden)
     }
-
     pub fn response(self) -> axum::response::Response {
         match self.types {
-            AppErrorType::Forbidden => {
+            AppErrorType::Forbidden  => {
                 let mut hm = HeaderMap::new();
                 hm.insert(header::LOCATION, "/auth".parse().unwrap());
                 (StatusCode::FOUND, hm, ()).into_response()
@@ -111,13 +107,14 @@ impl From<bcrypt::BcryptError> for AppError {
         Self::from_err(Box::new(err), AppErrorType::Crypt)
     }
 }
+impl From<chrono::ParseError> for AppError {
+    fn from(err: chrono::ParseError) -> Self {
+        Self::from_err(Box::new(err), AppErrorType::Chrono)
+    }
+}
 
 impl IntoResponse for AppError {
-    fn into_response(self) -> Response {
-        let msg = match self.message {
-            Some(msg) => msg.clone(),
-            None => "有错误发生".to_string(),
-        };
-        msg.into_response()
+    fn into_response(self) -> axum::response::Response {
+        self.response()
     }
 }
